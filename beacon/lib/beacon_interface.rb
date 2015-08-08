@@ -81,9 +81,10 @@ module Beacon
             #TODO: make normal exception handling
             response = Net::HTTP.get_response(url)
             if response.header.code != "200" then
-                puts "Got #{response.header.code} by #{url}"
-                puts "Response body: #{response.body}"
-                response.error!
+                #puts "Got #{response.header.code} by #{url}"
+                #puts "Response body: #{response.body}"
+                raise "asd"
+                #response.error!
             end
             response.body
         end

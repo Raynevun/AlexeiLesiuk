@@ -32,7 +32,7 @@ class TestBeaconInterface < Test::Unit::TestCase
     record = Beacon::Record.new golden_record_xml
     assert_equal( expected_string, record.to_s )
   end
-  
+
 
   #this is just pisitive test, no any defence inside the API methods
   def test_baecon_api_request
@@ -51,6 +51,54 @@ class TestBeaconInterface < Test::Unit::TestCase
     assert_equal( record.time_stamp, "1439035020" )
     assert_equal( record.version, "Version 1.0" )
     # And go on.. 
+  end
+
+  def test_beacon_api_request_exception_handling_404
+    incorrect_time_stamp = "9999999999"
+    expected_body        = "HTTP 404 Error: record not found for timevalue #{incorrect_time_stamp}"
+    url                  = "https://beacon.nist.gov/rest/record/#{incorrect_time_stamp}"
+    
+    stub_request(:get, url).with(:headers => {'Accept'=>'*/*', 'Host'=>'beacon.nist.gov'}).
+        to_return(:status => 404, :body => expected_body, :headers => {})    
+
+    assert_raise do |error|
+        record = Beacon::Get.by_timestamp "#{incorrect_time_stamp}"
+    end
+  end
+
+
+  def test_beacon_api_request_exception_handling_400
+    url = "https://beacon.nist.gov/rest/record/asdasdasd"
+    stub_request(:get, url).with(:headers => {'Accept'=>'*/*', 'Host'=>'beacon.nist.gov'}).
+        to_return(:status => 400, :body => "", :headers => {})    
+
+    assert_raise do |error|
+        record = Beacon::Get.by_timestamp "#{incorrect_time_stamp}"
+    end
+  end
+
+
+  def test_beacon_api_request_exception_handling
+    incorrect_time_stamp = "9999999999"
+    expected_body = "HTTP 404 Error: record not found for timevalue #{incorrect_time_stamp}"
+    stub_request(:get, "https://beacon.nist.gov/rest/record/#{incorrect_time_stamp}").
+        with(:headers => {'Accept'=>'*/*', 'Host'=>'beacon.nist.gov'}).
+        to_return(:status => 404, :body => expected_body, :headers => {})    
+
+    assert_raise do |error|
+        record = Beacon::Get.by_timestamp "#{incorrect_time_stamp}"
+    end
+  end
+
+
+  def test_api_request 
+    expected_body = File.read("tests/expected_xml/golden_record_by_timestamp.xml")
+
+    stub_request(:get, "https://beacon.nist.gov/rest/record/1439035020").
+        with(:headers => {'Accept'=>'*/*', 'Host'=>'beacon.nist.gov'}).
+        to_return(:status => 200, :body => expected_body, :headers => {})    
+        res = Beacon::ApiRequest.new( URI.parse("https://beacon.nist.gov/rest/record/1439035020") )
+        assert_equal( expected_body, res.result )
   end
 
 end
