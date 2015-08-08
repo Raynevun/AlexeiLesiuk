@@ -2,6 +2,7 @@ require 'net/http'
 require 'uri'
 require 'rexml/document'
 require 'pry'
+require 'active_support/all'
 
 module Beacon
 
@@ -45,23 +46,58 @@ module Beacon
         def to_s
             self.class.chars_entry_to_s @chars_entry
         end
+
+        def self.sum hash1, hash2
+            hash1.merge(hash2){|key, oldval, newval| newval + oldval}
+        end
     end 
 
     class TimeStamp
-        def self.round_to_sec
-            time_now = Time.now
-            time_stamp = time_now.to_i - time_now.sec
+        def self.round_to_sec time
+            time_stamp = time.to_i - time.sec
         end
 
-        def self.get_period t1, t2
+        def self.get_period t_from, t_to
+            time_stamp_from = self.round_to_sec( t_from )
+            time_stamp_to = self.round_to_sec( t_to )
+
+            time_stamp = time_stamp_from
+            period = []
+            while time_stamp < time_stamp_to  do
+               period.push(time_stamp)
+               time_stamp += 60
+            end
+            period
         end
 
-        def self.option_to_i option
+        def self.option_to_date_time option
+            month_match = /\b(\d+)\b\s+month[s]*\b/.match option
+            days_match = /\b(\d+)\b\s+day[s]*\b/.match option
+            hours_match = /\b(\d+)\b\s+hour[s]*\b/.match option
+
+            # if !(strip.end_with? "ago") then
+            # end
+
+            date_time = DateTime.now
+            date_time -= month_match[1].to_i.months if !month_match.nil?
+            date_time -= days_match[1].to_i.days  if !days_match.nil?
+            date_time -= hours_match[1].to_i.hours if !hours_match.nil?
+            
+            date_time
         end
     end
 
     class Get 
         PATH = "/rest/record"
+
+        def self.by_time time
+            time_stamp = TimeStamp.round_to_sec(time)
+            url = URI.parse(BASE_URL)
+            url.path = "#{PATH}/#{time_stamp}"
+
+            source_xml = ApiRequest.new(url).result 
+            Record.new(source_xml)
+        end
 
         def self.by_timestamp time_stamp
             url = URI.parse(BASE_URL)
@@ -71,8 +107,16 @@ module Beacon
             Record.new(source_xml)
         end
 
-        def self.by_period
-            raise "Not implemented yet"
+        def self.by_period time_from, time_to
+            result_chars_entry_hash = {}
+            period = TimeStamp.get_period( time_from, time_to )
+
+            period.each { |element|
+                record = self.by_timestamp element
+                result_chars_entry_hash = Record.sum(result_chars_entry_hash, record.chars_entry)
+            }
+
+            result_chars_entry_hash
         end
     end
 
@@ -81,10 +125,7 @@ module Beacon
             #TODO: make normal exception handling
             response = Net::HTTP.get_response(url)
             if response.header.code != "200" then
-                #puts "Got #{response.header.code} by #{url}"
-                #puts "Response body: #{response.body}"
-                raise "asd"
-                #response.error!
+                response.error!
             end
             response.body
         end
