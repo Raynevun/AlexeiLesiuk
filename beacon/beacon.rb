@@ -12,5 +12,10 @@ case ARGV.count
         #pp record
     else
        options = OptparseBeacon.parse(ARGV)
-       pp options
+       timestamp_from = Beacon::TimeStamp.option_to_i(options.from)
+       timestamp_to = Beacon::TimeStamp.option_to_i(options.to)
+        
+       puts Beacon::Get.by_timestamp options.time_stamp
+       # Beacon::TimeStamp.get_period(timestamp_from, timestamp_to)
+       # Beacon::Get.by_period()
 end

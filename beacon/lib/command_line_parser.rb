@@ -3,71 +3,49 @@
 require 'optparse'
 require 'optparse/time'
 require 'ostruct'
-require 'pp'
 
 class OptparseBeacon
-  #
-  # Return a structure describing the options.
-  #
   def self.parse(args)
-    # The options specified on the command line will be collected in *options*.
-    # We set default values here.
     options = OpenStruct.new
-    options.library = []
-    options.inplace = false
-    options.encoding = "utf8"
-    options.transfer_type = :auto
-    options.verbose = false
-    options.user = ""
+    options.from = ""
+    options.to = ""
+    options.time_stamp
 
     opt_parser = OptionParser.new do |opts|
-      opts.banner = "Usage: example.rb [options]"
+      opts.banner = "Usage: beacon.rb [options]"
 
       opts.separator ""
       opts.separator "Specific options:"
 
       # Test argument.
-      opts.on("-u", "--user USERNAME", String,
-              "Search by USERNAME in login, full name and e-mail fields") do |username|
-        options.user = username
+      opts.on("-f", "--from FROM_DATE", String,
+              "Acceptable format is 'MM month[s] DD day[s] SS second[s]") do |from_date|
+        options.from = from_date
       end
 
-      # Mandatory argument.
-      opts.on("-r", "--require LIBRARY",
-              "Require the LIBRARY before executing your script") do |lib|
-        options.library << lib
+      opts.on("-t", "--to TO_DATE", String,
+              "Acceptable format is 'MM month[s] DD day[s] SS second[s]") do |to_date|
+        options.to = to_date
       end
 
-      # Optional argument; multi-line description.
-      opts.on("-i", "--inplace [EXTENSION]",
-              "Edit ARGV files in place",
-              "  (make backup if EXTENSION supplied)") do |ext|
-        options.inplace = true
-        options.extension = ext || ''
-        options.extension.sub!(/\A\.?(?=.)/, ".")  # Ensure extension begins with dot.
+      opts.on("-s", "--time-stamp TIMESTAMP", String,
+              "Acceptable format is UNIX POSIX format (number of seconds since midnight UTC, January 1, 1970") do |time_stamp|
+        options.time_stamp = time_stamp
       end
 
       opts.separator ""
       opts.separator "Common options:"
 
       # No argument, shows at tail.  This will print an options summary.
-      # Try it and see!
       opts.on_tail("-h", "--help", "Show this message") do
         puts opts
         exit
       end
-
-      # Another typical switch to print the version.
-      # opts.on_tail("-v", "--version", "Show version") do
-      #   puts ::Version.join('.')
-      #   exit
-      # end
     end
 
     opt_parser.parse!(args)
     options
   end  # parse()
-
-end  # class OptparseExample
+end  
 
 

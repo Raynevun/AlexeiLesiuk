@@ -52,6 +52,12 @@ module Beacon
             time_now = Time.now
             time_stamp = time_now.to_i - time_now.sec
         end
+
+        def self.get_period t1, t2
+        end
+
+        def self.option_to_i option
+        end
     end
 
     class Get 
@@ -64,12 +70,21 @@ module Beacon
             source_xml = ApiRequest.new(url).result 
             Record.new(source_xml)
         end
+
+        def self.by_period
+            raise "Not implemented yet"
+        end
     end
 
     class ApiRequest < Struct.new(:url)
         def result
+            #TODO: make normal exception handling
             response = Net::HTTP.get_response(url)
-            #TODO: add verifications and make it in defencive style
+            if response.header.code != "200" then
+                puts "Got #{response.header.code} by #{url}"
+                puts "Response body: #{response.body}"
+                response.error!
+            end
             response.body
         end
     end
