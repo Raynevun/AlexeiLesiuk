@@ -10,7 +10,9 @@ module Beacon
     class Record
         attr_accessor :version, :frequency, :time_stamp, :previous_output_value, :signature_value, :output_value, :seed_value, :status_code
         attr_reader :chars_entry
-        def initialize xml
+        def initialize source_xml
+            xml = REXML::Document.new source_xml
+
             @time_stamp =            xml.elements["record/timeStamp"].nil? ? nil : xml.elements["record/timeStamp"].text
             @version =               xml.elements["record/version"].nil? ? nil : xml.elements["record/version"].text
             @frequency =             xml.elements["record/frequency"].nil? ? nil : xml.elements["record/frequency"].text
@@ -20,10 +22,10 @@ module Beacon
             @output_value =          xml.elements["record/outputValue"].nil? ? nil : xml.elements["record/outputValue"].text
             @status_code =           xml.elements["record/statusCode"].nil? ? nil : xml.elements["record/statusCode"].text
 
-            @chars_entry = self.get_chars_entry( @output_value )
+            @chars_entry = self.class.get_chars_entry( @output_value )
         end
 
-        def get_chars_entry str
+        def self.get_chars_entry str
             if (!str.nil?)
                 chars_hash = {}
                 keys = str.chars.uniq
@@ -34,14 +36,14 @@ module Beacon
             chars_hash
         end
 
-        def chars_entry_to_s chars_entry_hash
+        def self.chars_entry_to_s chars_entry_hash
             result = ""
             chars_entry_hash.sort.each { |key, value| result += "#{key},#{value}\n"}
             return result
         end
 
         def to_s
-            self.chars_entry_to_s @chars_entry
+            self.class.chars_entry_to_s @chars_entry
         end
     end 
 
@@ -59,8 +61,8 @@ module Beacon
             url = URI.parse(BASE_URL)
             url.path = "#{PATH}/#{time_stamp}"
 
-            res = ApiRequest.new(url).result 
-            Record.new(res)
+            source_xml = ApiRequest.new(url).result 
+            Record.new(source_xml)
         end
     end
 
@@ -68,7 +70,7 @@ module Beacon
         def result
             response = Net::HTTP.get_response(url)
             #TODO: add verifications and make it in defencive style
-            REXML::Document.new response.body
+            response.body
         end
     end
 

@@ -8,8 +8,7 @@ class TestBeaconInterface < Test::Unit::TestCase
 
   def test_beacon_record_initialization
     golden_record_xml = File.read("tests/expected_xml/get_record_by_timestamp.xml")
-    xml_doc = REXML::Document.new golden_record_xml
-    record = Beacon::Record.new xml_doc
+    record = Beacon::Record.new golden_record_xml
     assert_equal( record.time_stamp, "1439035020" )
     assert_equal( record.version, "Version 1.0" )
     assert_equal( record.seed_value, "CAE43C74B4CC25994FD6285FAA9F667E4CFA8F7AA1BF1289F728D925A6A63B00162D34727C0FF6297540D466D9F0749BB496A03D398ECCE08CE807B2A869E085" )
@@ -21,12 +20,10 @@ class TestBeaconInterface < Test::Unit::TestCase
 
 
   def test_beacon_hash_chars_entry_calculation
-    golden_record_xml = File.read("tests/expected_xml/get_record_by_timestamp.xml")
-    golden_record_output_value = "A27C5CADC6E822736C9E6F0FF5A0DCF0903ABCF11CFE70D0DCD24E089983A5D2815FF71733DF8FBE5F010C57A576A7B730A5F4F2874819738E258E63FA4CAF8E"
-    expected_chars_entry_hash = {"A"=>10, "2"=>7, "7"=>11, "C"=>10, "5"=>9, "D"=>7, "6"=>5, "E"=>8, "8"=>10, "3"=>8, "9"=>5, "F"=>15, "0"=>10, "B"=>3, "1"=>6, "4"=>4}
-    xml_doc = REXML::Document.new golden_record_xml
-    record = Beacon::Record.new xml_doc
-    assert_equal( record.get_chars_entry( record.output_value ), expected_chars_entry_hash )
+    assert_equal( nil, Beacon::Record.get_chars_entry(nil) )
+    assert_equal( {}, Beacon::Record.get_chars_entry("") )
+    assert_equal( {"1"=>1}, Beacon::Record.get_chars_entry("1") )
+    assert_equal( {"A"=>1, "B"=>2, "C"=>3}, Beacon::Record.get_chars_entry("ABBCCC") )
   end
 
 
