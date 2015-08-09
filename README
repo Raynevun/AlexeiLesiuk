@@ -1,0 +1,39 @@
+Before we start
+Download source from GitHub
+    $ git clone git@github.com:Raynevun/AlexeiLesiuk.git
+
+    or just download by https uri nad unpack:
+    $ wget https://github.com/Raynevun/AlexeiLesiuk/archive/master.zip
+    $ tar -xfv master.zip
+
+
+Prepare environment:
+    Before start please make sure that ruby already installed
+    $ ruby -v
+
+    If not, you can install it using rvm:
+    $ \curl -sSL https://get.rvm.io | bash -s stable --ruby
+
+    RVM requres login shell, so change terminal settring or execute
+    $ /bin/bash --login
+
+    Some gem's also requred:
+    $ gem install bundler
+
+    $ cd AlexeiLesiuk
+    $ bundle install
+
+
+Run test:
+    Tests runs by default rake task, os just excute
+    $ rake
+
+Run application:
+    $ cd beacon/
+    $ ruby beacon.rb
+
+or with params:
+    $ ruby reacon.rb --from "1 day" --to "23 hours"
+    $ ruby reacon.rb --from "4 day 1 month 3 hours ago" --to "23 hours 20 days ago"
+    $ ruby reacon.rb --from "1 day" 
+    $ ruby reacon.rb --to "1 hour"
